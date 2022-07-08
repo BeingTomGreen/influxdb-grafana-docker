@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  influxdb:
+    image: influxdb:${INFLUXDB_VERSION}
+    restart: always
+    networks:
+      - metrics
+    ports:
+      - "${INFLUXDB_PORT}:${INFLUXDB_PORT}"
+    volumes:
+      - ${INFLUXDB_VOLUME_PATH}:/var/lib/influxdb2
+      - ./provisioning/influxdb/config.yml:/etc/influxdb2/config.yml
+      # - $HOME/docker/influxdb/init:/docker-entrypoint-initdb.d
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_INIT_USERNAME}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_INIT_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_INIT_ORG}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_INIT_BUCKET}
+      DOCKER_INFLUXDB_INIT_RETENTION: ${INFLUXDB_INIT_RETENTION}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_INIT_ADMIN_TOKEN}
+  # telegraf:
+  #   image: telegraf:latest
+  #   restart: always
+  #   container_name: telegraf
+  #   networks: [ metrics ]
+  #   volumes:
+  #     - $HOME/docker/influxdb/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  # chronograf:
+  #   restart: always
+  #   image: chronograf:latest
+  #   ports:
+  #     - "127.0.0.1:8888:8888"
+  #   depends_on:
+  #     - influxdb
+  #   networks: [ metrics ]
+  #   environment:
+  #     - INFLUXDB_URL=http://influxdb:8086 # needs to match container_name
+  #     - INFLUXDB_USERNAME=${INFLUXDB_USERNAME}
+  #     - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}
+
+networks:
+  metrics:
+    external: false
